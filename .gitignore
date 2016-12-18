@@ -1,0 +1,5 @@
+/*
+!.gitignore
+!package.json
+!webpack.dev.config.js
+!assets
