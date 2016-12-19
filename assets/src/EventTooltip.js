@@ -43,7 +43,7 @@ export default class EventTooltip extends Component {
     const infoTitleWidth = (eventTitle.length*infoTitleSize);
     const infoTimeWidth = (eventStartTime.format("YYYY-MM-DD HH:mm:ss").length + 
                           eventEndTime.format("YYYY-MM-DD HH:mm:ss").length + 3 )*infoTimeSize;
-    const infoWidth = infoTitleWidth > infoTimeWidth ? infoTitleWidth/2:infoTimeWidth/2;
+    const infoWidth = infoTitleWidth > infoTimeWidth ? infoTitleWidth/2+10:infoTimeWidth/2+10;
     const xInfo = centerPoint.x - infoWidth/2;
     const yInfo = centerPoint.y - triangleHeight - infoHeight;
 

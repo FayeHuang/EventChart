@@ -23,21 +23,39 @@ const outageEvents = [
     startTime: Moment('2016-12-14 09:00:00'),
     endTime: Moment('2016-12-15 14:00:00'),
     title: "event ttt"
+  }, {
+    id: 4,
+    startTime: Moment('2016-12-15 08:00:00'),
+    endTime: Moment('2016-12-15 20:00:00'),
+    title: "event yyy"
+  }, {
+    id: 5,
+    startTime: Moment('2016-12-15 09:00:00'),
+    endTime: Moment('2016-12-16 14:00:00'),
+    title: "event xxx"
+  }, {
+    id: 6,
+    startTime: Moment('2016-12-15 14:00:00'),
+    endTime: Moment('2016-12-15 21:00:00'),
+    title: "event rrr"
   }
+
 ];
 
 export default class EventChart extends Component {
   
   static propTypes = {
-    eventHeight : PropTypes.number,
-    fontSize : PropTypes.number,
-    chartWidth: PropTypes.number,
+    eventHeight: PropTypes.number,
+    fontSize: PropTypes.number,
+    width: PropTypes.number,
+    height: PropTypes.number,
   };
 
   static defaultProps = {
     eventHeight : 30,
     fontSize : 18,
-    chartWidth : 1024,
+    width: 1024,
+    height: 768,
   };
 
   constructor(props) {
@@ -134,7 +152,7 @@ export default class EventChart extends Component {
     const tooltipInfoHeight = tooltipInfoTitleSize + tooltipInfoTimeSize + 10;
     
     // event markers
-    const timeScale = scaleTime().domain([this.state.chartStartTime, this.state.chartEndTime]).range([0, this.props.chartWidth]);
+    const timeScale = scaleTime().domain([this.state.chartStartTime, this.state.chartEndTime]).range([0, this.props.width]);
     const xTextOffset = 4;
     const yTextOffset = (this.props.eventHeight-4-this.props.fontSize)/2;
     const eventMarkers = [];
@@ -207,26 +225,45 @@ export default class EventChart extends Component {
       i += 1;
     }
 
+    // 時間軸的高度
+    const timeLineHeight = 25;
+    // 與頁面滿版的高度
+    const eventChartDivHeight = this.props.height - timeLineHeight;
+    // 所有 event 加總的高度
+    const allEventHeight = yPos + this.props.eventHeight + 10;
+    // 減 10 (because stroke width ?) 避免 svg event chart overflow
+    const eventChartHeight = allEventHeight > eventChartDivHeight-10 ? allEventHeight:eventChartDivHeight-10;
+
     return(
-      <svg 
-        width={this.props.chartWidth} 
-        height={yPos + this.props.eventHeight + 50 + 25} 
-        style={{ background:'#333', cursor:'-webkit-grabbing' }}
-        onMouseDown={e => this.onMouseDown(e)}
-        onMouseMove={e => this.onMouseMove(e)}
-        onMouseOut={e => this.onMouseOut(e)}
-        onMouseUp={e => this.onMouseUp(e)}
-        onWheel={e => this.handleScrollWheel(e)}
-      >
-        {eventMarkers}
-        <g transform={`translate(0,${yPos + this.props.eventHeight + 50})`}>
+      <div>
+        <div style={{
+          width:this.props.width, 
+          height:eventChartDivHeight, 
+          overflowX:'hidden', 
+          overflowY:'scroll',
+        }}>
+          <svg 
+            width={this.props.width} 
+            height={eventChartHeight} 
+            style={{ cursor:'-webkit-grabbing' }}
+            onMouseDown={e => this.onMouseDown(e)}
+            onMouseMove={e => this.onMouseMove(e)}
+            onMouseOut={e => this.onMouseOut(e)}
+            onMouseUp={e => this.onMouseUp(e)}
+            onWheel={e => this.handleScrollWheel(e)}
+          >
+            {eventMarkers}
+          </svg>
+        </div>
+        <svg width={this.props.width} height={timeLineHeight}>
+          <line x1={0} y1={0} x2={this.props.width} y2={0} style={{stroke:'#ccc', strokeWidth:2}} />
           <TimeAxis
             scale={timeScale}
             utc={false}
             showGrid={false}
           />
-        </g>
-      </svg>
+        </svg>
+      </div>
     )
   }
 }

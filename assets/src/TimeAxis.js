@@ -27,7 +27,7 @@ const defaultStyle = {
   labels: {
     labelColor: '#8B7E7E', // Default label color
     labelWeight: 100,
-    labelSize: 11,
+    labelSize: 14,
   },
   axis: {
     axisColor: '#C0C0C0',
