@@ -5,6 +5,7 @@ import { scaleTime } from 'd3-scale';
 
 import EventTooltip from './EventTooltip';
 import TimeAxis from './TimeAxis';
+import EventDetailDialog from './EventDetailDialog';
 
 // Test data
 const outageEvents = [
@@ -61,25 +62,26 @@ export default class EventChart extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      hover: null,
+      hoverEvent: null,
+      clickEvent: null,
       chartStartTime: Moment('2016-12-12 09:00:00'),
       chartEndTime: Moment('2016-12-16 09:00:00'),
       isDragging: false,
       mouseXPos: 0,
+      eventDialogOpen: false,
     };
   };
 
   // event action 
   handleEventClick(e, event) {
     e.stopPropagation();
-    console.log('click event');
-    console.log(event);
+    this.setState({ clickEvent: event, eventDialogOpen: true });
   };
   onEventMouseOver(e, event) {
-    this.setState({ hover: event });
+    this.setState({ hoverEvent: event });
   };
   onEventMouseLeave() {
-    this.setState({ hover: null });
+    this.setState({ hoverEvent: null });
   };
 
   // svg action 
@@ -123,8 +125,6 @@ export default class EventChart extends Component {
     console.log(`mouse up. x=${x}, y=${y}`);
     this.setState({ mouseXPos: 0, isDragging: false });
   };
-  
-   
 
   handleScrollWheel(e) {
     e.preventDefault();
@@ -142,6 +142,10 @@ export default class EventChart extends Component {
         chartEndTime: this.state.chartEndTime.add(1, 'hours'),
       });
     }
+  };
+
+  handleEventDialogClose() {
+    this.setState({ clickEvent: null, eventDialogOpen: false });
   };
 
   render() {
@@ -177,7 +181,7 @@ export default class EventChart extends Component {
 
       // if event hovered, show event tooltip 
       let tooltip = null;
-      if ( this.state.hover && this.state.hover.id == event.id ) {
+      if ( this.state.hoverEvent && this.state.hoverEvent.id == event.id ) {
         tooltip = (
           <EventTooltip 
             xEventPos={x}
@@ -225,6 +229,18 @@ export default class EventChart extends Component {
       i += 1;
     }
 
+    let dialog = null;
+    if (this.state.eventDialogOpen && this.state.clickEvent) {
+      dialog = (
+        <EventDetailDialog 
+          event={this.state.clickEvent}
+          dialogOpen={this.state.eventDialogOpen}
+          handleEventDialogClose={() => this.handleEventDialogClose() }
+        />
+      )
+    }
+
+
     // 時間軸的高度
     const timeLineHeight = 25;
     // 與頁面滿版的高度
@@ -263,6 +279,7 @@ export default class EventChart extends Component {
             showGrid={false}
           />
         </svg>
+        {dialog}
       </div>
     )
   }

@@ -1,5 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 import EventChart from './EventChart';
 
 export default class Main extends Component {
@@ -54,35 +56,37 @@ export default class Main extends Component {
 
   render() {
     return(
-      <div>
-        <div style={{
-          fontSize:36,
-          height: this.props.appBarHeight,
-          lineHeight: '100px',
-          color:'#ccc',
-          verticalAlign: 'middle',
-          paddingLeft: 30,
-        }}>
-          App Bar 
-        </div>
+      <MuiThemeProvider>
+        <div>
+          <div style={{
+            fontSize:36,
+            height: this.props.appBarHeight,
+            lineHeight: '100px',
+            color:'#ccc',
+            verticalAlign: 'middle',
+            paddingLeft: 30,
+          }}>
+            App Bar 
+          </div>
 
-        <div style={{
-          fontSize:36,
-          height: this.props.toolBarHeight,
-          lineHeight: '100px',
-          color:'#ccc',
-          verticalAlign: 'middle',
-          paddingLeft: 30,
-          borderBottom:'1px solid #ccc',
-        }}>
-          Toolbar 
-        </div>
+          <div style={{
+            fontSize:36,
+            height: this.props.toolBarHeight,
+            lineHeight: '100px',
+            color:'#ccc',
+            verticalAlign: 'middle',
+            paddingLeft: 30,
+            borderBottom:'1px solid #ccc',
+          }}>
+            Toolbar 
+          </div>
 
-        <EventChart 
-          width={this.state.chartWidth}
-          height={this.state.chartHeight-10}
-        />
-      </div>
+          <EventChart 
+            width={this.state.chartWidth}
+            height={this.state.chartHeight-10}
+          />
+        </div>
+      </MuiThemeProvider>
     )
   }
 }
