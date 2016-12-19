@@ -5,7 +5,6 @@ import { scaleTime } from 'd3-scale';
 
 import EventTooltip from './EventTooltip';
 import TimeAxis from './TimeAxis';
-import EventHandler from './EventHandler';
 
 // Test data
 const outageEvents = [
@@ -26,20 +25,6 @@ const outageEvents = [
     title: "event ttt"
   }
 ];
-
-// const events = outageEvents.map(({startTime, endTime, ...data}) =>
-//     new TimeRangeEvent(new TimeRange(new Date(startTime),new Date(endTime)), data)
-// );
-// console.log(events[0].toPoint());
-// console.log(events[0].timerange());
-// console.log(events[0].data());
-// console.log(events[0].timerangeAsUTCString());
-// console.log(events[0].timerangeAsLocalString());
-// console.log(events[0].begin());
-// console.log(events[0].end());
-// console.log(events[0].timestamp());
-// console.log(events[0].get());
-//const series = new TimeSeries({name: "outages", events});
 
 export default class EventChart extends Component {
   
