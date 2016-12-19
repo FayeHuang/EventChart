@@ -256,7 +256,7 @@ export default class EventChart extends Component {
           width:this.props.width, 
           height:eventChartDivHeight, 
           overflowX:'hidden', 
-          overflowY:'scroll',
+          overflowY:'auto',
         }}>
           <svg 
             width={this.props.width} 
@@ -271,7 +271,14 @@ export default class EventChart extends Component {
             {eventMarkers}
           </svg>
         </div>
-        <svg width={this.props.width} height={timeLineHeight}>
+        <svg width={this.props.width} height={timeLineHeight}
+          style={{ cursor:'-webkit-grabbing' }}
+          onMouseDown={e => this.onMouseDown(e)}
+          onMouseMove={e => this.onMouseMove(e)}
+          onMouseOut={e => this.onMouseOut(e)}
+          onMouseUp={e => this.onMouseUp(e)}
+          onWheel={e => this.handleScrollWheel(e)}
+        >
           <line x1={0} y1={0} x2={this.props.width} y2={0} style={{stroke:'#ccc', strokeWidth:2}} />
           <TimeAxis
             scale={timeScale}

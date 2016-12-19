@@ -25,7 +25,7 @@ function scaleAsString(scale) {
 
 const defaultStyle = {
   labels: {
-    labelColor: '#8B7E7E', // Default label color
+    labelColor: '#ccc', // Default label color
     labelWeight: 100,
     labelSize: 14,
   },
