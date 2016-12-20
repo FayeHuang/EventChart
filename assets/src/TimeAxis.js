@@ -25,12 +25,13 @@ function scaleAsString(scale) {
 
 const defaultStyle = {
   labels: {
-    labelColor: '#ccc', // Default label color
-    labelWeight: 100,
+    labelColor: '#8b8b8b', // Default label color
+    labelWeight: 400,
     labelSize: 14,
   },
   axis: {
-    axisColor: '#C0C0C0',
+    axisColor: '#8b8b8b',
+    strokeWidth: 2,
   },
 };
 
@@ -97,7 +98,7 @@ export default class TimeAxis extends React.Component {
     const axisStyle = merge(true,
                 defaultStyle.axis,
                 this.props.style.axis ? this.props.style.axis : {});
-    const { axisColor } = axisStyle;
+    const { axisColor, strokeWidth } = axisStyle;
     const { labelColor, labelWeight, labelSize } = labelStyle;
 
 
@@ -128,7 +129,8 @@ export default class TimeAxis extends React.Component {
       .select('g')
       .selectAll('.tick')
       .select('line')
-      .style('stroke', axisColor);
+      .style('stroke', axisColor)
+      .style('stroke-width', strokeWidth);
                                         // XXX
     select(ReactDOM.findDOMNode(this))  // eslint-disable-line
       .select('g')

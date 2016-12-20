@@ -7,38 +7,49 @@ import EventTooltip from './EventTooltip';
 import TimeAxis from './TimeAxis';
 import EventDetailDialog from './EventDetailDialog';
 
+const yellow = "#e7d77f";
+const blue = "#7ec9e9";
+const green = "#72e78f";
+const red  = "#f59098";
+
 // Test data
 const outageEvents = [
   {
     id: 1,
     startTime: Moment('2016-12-12 13:00:00'),
     endTime: Moment('2016-12-13 13:00:00'),
-    title: "event 123"
+    title: "event 123",
+    color: yellow,
   }, {
     id: 2,
     startTime: Moment('2016-12-13 13:00:00'),
     endTime: Moment('2016-12-14 13:00:00'),
-    title: "event 456"
+    title: "event 456",
+    color: blue,
   }, {
     id: 3,
     startTime: Moment('2016-12-14 09:00:00'),
     endTime: Moment('2016-12-15 14:00:00'),
-    title: "event ttt"
+    title: "event ttt",
+    color: green,
   }, {
     id: 4,
     startTime: Moment('2016-12-15 08:00:00'),
     endTime: Moment('2016-12-15 20:00:00'),
-    title: "event yyy"
+    title: "event yyy",
+    color: red,
   }, {
     id: 5,
     startTime: Moment('2016-12-15 09:00:00'),
     endTime: Moment('2016-12-16 14:00:00'),
-    title: "event xxx"
+    title: "event xxx",
+    color: yellow,
   }, {
     id: 6,
     startTime: Moment('2016-12-15 14:00:00'),
     endTime: Moment('2016-12-15 21:00:00'),
-    title: "event rrr"
+    title: "event rrr",
+    color: green,
   }
 
 ];
@@ -89,7 +100,6 @@ export default class EventChart extends Component {
     e.preventDefault();
     const x = e.pageX;
     const y = e.pageY;
-    console.log(`mouse down. x=${x}, y=${y}`);
     this.setState({ mouseXPos: x, isDragging: true });
   };
   onMouseMove(e) {
@@ -113,7 +123,6 @@ export default class EventChart extends Component {
     }
   };
   onMouseOut(e) {
-    console.log('mouse out');
     e.preventDefault();
     this.setState({ mouseXPos: 0, isDragging: false });
   };
@@ -122,7 +131,6 @@ export default class EventChart extends Component {
     e.stopPropagation();
     const x = e.pageX;
     const y = e.pageY;
-    console.log(`mouse up. x=${x}, y=${y}`);
     this.setState({ mouseXPos: 0, isDragging: false });
   };
 
@@ -130,13 +138,11 @@ export default class EventChart extends Component {
     e.preventDefault();
 
     if (e.deltaY < 0) {
-      console.log('zoom out');
       this.setState({ 
         chartStartTime: this.state.chartStartTime.add(1, 'hours'),
         chartEndTime: this.state.chartEndTime.subtract(1, 'hours'),
       });
     } else {
-      console.log('zoom in');
       this.setState({ 
         chartStartTime: this.state.chartStartTime.subtract(1, 'hours'),
         chartEndTime: this.state.chartEndTime.add(1, 'hours'),
@@ -170,26 +176,34 @@ export default class EventChart extends Component {
       const stacked = preEventEndTime && (event.startTime-preEventEndTime <= 0) ? true : false;
       yPos = stacked ? yPos+this.props.eventHeight+10 : yPos;
       const y = yPos;
+      event.y = y;
 
       // 計算 event x 軸位置
       const beginPos = timeScale(event.startTime);
       const endPos = timeScale(event.endTime);
       const x = beginPos;
+      event.x = x;
+      event.beginPos = beginPos;
+      event.endPos = endPos;
 
       // 計算 event width
       const width = endPos - beginPos;
+      event.width = width;
+
+      // 計算 event text
+      const textX = (beginPos>=0) ? (x+xTextOffset):(endPos>0 ? 0+xTextOffset:beginPos);
+      const textY = y+this.props.fontSize+yTextOffset;
 
       // if event hovered, show event tooltip 
+      /*
       let tooltip = null;
       if ( this.state.hoverEvent && this.state.hoverEvent.id == event.id ) {
         tooltip = (
           <EventTooltip 
-            xEventPos={x}
+            xEventBeginPos={beginPos}
+            xEventEndPos={endPos}
             yEventPos={y}
-            eventWidth={width}
-            eventStartTime={event.startTime}
-            eventEndTime={event.endTime}
-            eventTitle={event.title}
+            event={event}
             triangleHeight={tooltipTriangleHeight}
             infoTitleSize={tooltipInfoTitleSize}
             infoTimeSize={tooltipInfoTimeSize}
@@ -197,37 +211,53 @@ export default class EventChart extends Component {
           />
         )
       }
-
+      */
 
       eventMarkers.push(
         <g key={`event-${i}`}>
           <rect
             x={x}
             y={y}
+            rx={4}
+            ry={4}
             width={width}
             height={this.props.eventHeight}
-            style={{ fill:'#c1eac6', strokeWidth:1, stroke:'#737070' }}
+            style={{ fill:event.color}}
+            //filter="url(#filter1)"
             onClick={e => this.handleEventClick(e, event)}
             onMouseOver={e => this.onEventMouseOver(e, event)}
             onMouseLeave={() => this.onEventMouseLeave()}
           />
           <text 
-            x={x+xTextOffset}
-            y={y+this.props.fontSize+yTextOffset} 
-            style={{ fill:'black', fontSize:`${this.props.fontSize}px` }}
+            x={textX}
+            y={textY} 
+            style={{ fill:'#414143', fontSize:`${this.props.fontSize}px` }}
             onClick={e => this.handleEventClick(e, event)}
             onMouseOver={e => this.onEventMouseOver(e, event)}
             onMouseLeave={() => this.onEventMouseLeave()}
           >
             {event.title}
           </text>
-          {tooltip}
+          
         </g>
       );
 
       preEventEndTime = event.endTime;
       i += 1;
     }
+
+    let tooltip = null;
+    // if ( this.state.hoverEvent ) {
+      tooltip = (
+        <EventTooltip 
+          event={outageEvents[0]}
+          triangleHeight={tooltipTriangleHeight}
+          infoTitleSize={tooltipInfoTitleSize}
+          infoTimeSize={tooltipInfoTimeSize}
+          //infoHeight={tooltipInfoHeight}
+        />
+      )
+    // }
 
     let dialog = null;
     if (this.state.eventDialogOpen && this.state.clickEvent) {
@@ -242,7 +272,7 @@ export default class EventChart extends Component {
 
 
     // 時間軸的高度
-    const timeLineHeight = 25;
+    const timeLineHeight = 35;
     // 與頁面滿版的高度
     const eventChartDivHeight = this.props.height - timeLineHeight;
     // 所有 event 加總的高度
@@ -257,6 +287,8 @@ export default class EventChart extends Component {
           height:eventChartDivHeight, 
           overflowX:'hidden', 
           overflowY:'auto',
+          position: 'relative',
+          zIndex: 1,
         }}>
           <svg 
             width={this.props.width} 
@@ -268,8 +300,17 @@ export default class EventChart extends Component {
             onMouseUp={e => this.onMouseUp(e)}
             onWheel={e => this.handleScrollWheel(e)}
           >
+            <defs>
+              <filter id="filter1" x="0" y="0" width="200%" height="200%">
+                <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
+                <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
+                <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+              </filter>
+            </defs>
             {eventMarkers}
+
           </svg>
+          {tooltip}
         </div>
         <svg width={this.props.width} height={timeLineHeight}
           style={{ cursor:'-webkit-grabbing' }}
@@ -279,13 +320,14 @@ export default class EventChart extends Component {
           onMouseUp={e => this.onMouseUp(e)}
           onWheel={e => this.handleScrollWheel(e)}
         >
-          <line x1={0} y1={0} x2={this.props.width} y2={0} style={{stroke:'#ccc', strokeWidth:2}} />
+          <line x1={0} y1={0} x2={this.props.width} y2={0} style={{stroke:'#8b8b8b', strokeWidth:4}} />
           <TimeAxis
             scale={timeScale}
             utc={false}
             showGrid={false}
           />
         </svg>
+        
         {dialog}
       </div>
     )
