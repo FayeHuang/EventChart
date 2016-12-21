@@ -155,18 +155,14 @@ export default class EventChart extends Component {
   };
 
   render() {
-    // tooltip 
-    const tooltipTriangleHeight = 8;
-    const tooltipInfoTitleSize = 18;
-    const tooltipInfoTimeSize = 14;
-    const tooltipInfoHeight = tooltipInfoTitleSize + tooltipInfoTimeSize + 10;
+    
     
     // event markers
     const timeScale = scaleTime().domain([this.state.chartStartTime, this.state.chartEndTime]).range([0, this.props.width]);
     const xTextOffset = 4;
     const yTextOffset = (this.props.eventHeight-4-this.props.fontSize)/2;
     const eventMarkers = [];
-    let yPos = tooltipInfoHeight+tooltipTriangleHeight;
+    let yPos = 10;
     let i = 0;
     let preEventEndTime = null;
 
@@ -193,25 +189,6 @@ export default class EventChart extends Component {
       // 計算 event text
       const textX = (beginPos>=0) ? (x+xTextOffset):(endPos>0 ? 0+xTextOffset:beginPos);
       const textY = y+this.props.fontSize+yTextOffset;
-
-      // if event hovered, show event tooltip 
-      /*
-      let tooltip = null;
-      if ( this.state.hoverEvent && this.state.hoverEvent.id == event.id ) {
-        tooltip = (
-          <EventTooltip 
-            xEventBeginPos={beginPos}
-            xEventEndPos={endPos}
-            yEventPos={y}
-            event={event}
-            triangleHeight={tooltipTriangleHeight}
-            infoTitleSize={tooltipInfoTitleSize}
-            infoTimeSize={tooltipInfoTimeSize}
-            infoHeight={tooltipInfoHeight}
-          />
-        )
-      }
-      */
 
       eventMarkers.push(
         <g key={`event-${i}`}>
@@ -246,18 +223,20 @@ export default class EventChart extends Component {
       i += 1;
     }
 
+    // tooltip 
+    const tooltipInfoTitleSize = 18;
+    const tooltipInfoTimeSize = 14;
     let tooltip = null;
-    // if ( this.state.hoverEvent ) {
+    if ( this.state.hoverEvent ) {
       tooltip = (
         <EventTooltip 
-          event={outageEvents[0]}
-          triangleHeight={tooltipTriangleHeight}
+          event={this.state.hoverEvent}
           infoTitleSize={tooltipInfoTitleSize}
           infoTimeSize={tooltipInfoTimeSize}
-          //infoHeight={tooltipInfoHeight}
         />
       )
-    // }
+    }
+
 
     let dialog = null;
     if (this.state.eventDialogOpen && this.state.clickEvent) {
@@ -282,35 +261,50 @@ export default class EventChart extends Component {
 
     return(
       <div>
-        <div style={{
-          width:this.props.width, 
-          height:eventChartDivHeight, 
-          overflowX:'hidden', 
-          overflowY:'auto',
-          position: 'relative',
-          zIndex: 1,
-        }}>
-          <svg 
-            width={this.props.width} 
-            height={eventChartHeight} 
-            style={{ cursor:'-webkit-grabbing' }}
-            onMouseDown={e => this.onMouseDown(e)}
-            onMouseMove={e => this.onMouseMove(e)}
-            onMouseOut={e => this.onMouseOut(e)}
-            onMouseUp={e => this.onMouseUp(e)}
-            onWheel={e => this.handleScrollWheel(e)}
-          >
-            <defs>
-              <filter id="filter1" x="0" y="0" width="200%" height="200%">
-                <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
-                <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
-                <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-              </filter>
-            </defs>
-            {eventMarkers}
+        <div 
+          style={{
+            width:this.props.width,
+            height:eventChartDivHeight,
+            position:'relative'
+          }}>
+          {/* tooltip div */}
+          <div style={{width:this.props.width,height:eventChartDivHeight,position:'absolute',top:0,left:0}}>
+            {tooltip}
+          </div>
+          {/* end tooltip div */}
 
-          </svg>
-          {tooltip}
+          {/* event chart div */}
+          <div style={{
+            width:this.props.width, 
+            height:eventChartDivHeight, 
+            overflowX:'hidden', 
+            overflowY:'auto',
+            position:'absolute',
+            top:0,
+            left:0,
+          }}>
+            <svg 
+              width={this.props.width} 
+              height={eventChartHeight} 
+              style={{ cursor:'-webkit-grabbing' }}
+              onMouseDown={e => this.onMouseDown(e)}
+              onMouseMove={e => this.onMouseMove(e)}
+              onMouseOut={e => this.onMouseOut(e)}
+              onMouseUp={e => this.onMouseUp(e)}
+              onWheel={e => this.handleScrollWheel(e)}
+            >
+              <defs>
+                <filter id="filter1" x="0" y="0" width="200%" height="200%">
+                  <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
+                  <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
+                  <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+                </filter>
+              </defs>
+              {eventMarkers}
+            </svg>
+          </div>
+          {/* end event chart div */}
+          
         </div>
         <svg width={this.props.width} height={timeLineHeight}
           style={{ cursor:'-webkit-grabbing' }}
@@ -327,7 +321,6 @@ export default class EventChart extends Component {
             showGrid={false}
           />
         </svg>
-        
         {dialog}
       </div>
     )

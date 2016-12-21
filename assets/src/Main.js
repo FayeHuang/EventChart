@@ -41,8 +41,6 @@ export default class Main extends Component {
       chartHeight: (window.innerHeight - appBarHeight - toolBarHeight) > chartHeightMin ?
         (window.innerHeight-appBarHeight-toolBarHeight) : chartHeightMin,
     });
-    console.log(window.innerHeight);
-    console.log(this.props.chartHeight);
   };
 
   componentDidMount() {
@@ -72,8 +70,8 @@ export default class Main extends Component {
 
           <div style={{
             fontSize:36,
-            //height: this.props.toolBarHeight,
-            //lineHeight: '100px',
+            height: this.props.toolBarHeight,
+            lineHeight: '100px',
             color:'#ccc',
             verticalAlign: 'middle',
             paddingLeft: 30,

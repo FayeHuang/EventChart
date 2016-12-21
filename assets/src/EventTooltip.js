@@ -1,6 +1,5 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
-import Moment from 'moment';
 import {getTextWidth} from './util';
 
 export default class EventTooltip extends Component {
@@ -8,114 +7,112 @@ export default class EventTooltip extends Component {
   static propTypes = {
     event: PropTypes.object.isRequired,
     //
-    triangleHeight: PropTypes.number,
     infoTitleSize: PropTypes.number,
     infoTimeSize: PropTypes.number,
-    //infoHeight: PropTypes.number,
   };
 
   static defaultProps = {
-    triangleHeight: 8,
     infoTitleSize: 18,
     infoTimeSize: 14,
-    // infoTitleSize+infoTimeSize+10;
-    //infoHeight: 42,
   };
 
   constructor(props) {
     super(props);
   };
 
-  
-
   render() {
-    const {event, triangleHeight, infoTitleSize, infoTimeSize} = this.props;
-    // console.log(event);
+    const {event, infoTitleSize, infoTimeSize} = this.props;
     
-    // const eventBeginPos = event.beginPos < 0 ? 0:event.beginPos;
-    // const eventEndPos = event.endPos;
-    // const eventWidth = eventEndPos - eventBeginPos;
-    // const eventY = event.y;
-    // // triangle
-    // const centerPoint = {x:eventBeginPos+eventWidth/2, y:eventY};
-    // const leftPoint = {x:centerPoint.x-triangleHeight, y:centerPoint.y-triangleHeight};
-    // const rightPoint = {x:centerPoint.x+triangleHeight, y:centerPoint.y-triangleHeight};
-    const tooltipPadding = 10;
+    // 計算 infobox width & height
+    const infoPadding = 10;
     const titleTimePadding = 5;
     const infoTitleWidth = getTextWidth(event.title, `${infoTitleSize}px Arial`);
     const timeStr = `${event.startTime.format("YYYY-MM-DD HH:mm:ss")} - ${event.endTime.format("YYYY-MM-DD HH:mm:ss")}`;
     const infoTimeWidth = getTextWidth(timeStr, `${infoTimeSize}px Arial`);
-    const infoWidth = infoTitleWidth > infoTimeWidth ? (infoTitleWidth+tooltipPadding*2):(infoTimeWidth+tooltipPadding*2);
-    const infoHeight = tooltipPadding*2 + titleTimePadding + infoTitleSize + infoTimeSize + 15;
-    return (
-      <div style={{
-        width:infoWidth,
-        height:infoHeight,
-        position:'absolute',
-        background: '#8b8b8b',
-        opacity: 0.9,
-        top:-10,
-        bottom:0,
-        left:0,
-        right:0,
-        zIndex: 999,
-      }}>
-        <div style={{padding:tooltipPadding}}>
-          <div style={{
-            fontSize: this.props.infoTitleSize,
-            paddingBottom: titleTimePadding,
-          }}>
-            event ttt
-          </div>
+    const infoWidth = infoTitleWidth > infoTimeWidth ? (infoTitleWidth+infoPadding*2):(infoTimeWidth+infoPadding*2);
+    const infoHeight = infoPadding*2 + titleTimePadding + infoTitleSize + infoTimeSize + 15;
 
-          <div style={{
-            fontSize: this.props.infoTimeSize,
-          }}>
-            {timeStr}
-          </div>
+    // triangle width & height
+    const triangleHeight = 15;
+    const triangleWidth = 2*triangleHeight;
+
+    // 計算 triangle & info box position
+    const eventBeginPos = event.beginPos < 0 ? 0:event.beginPos;
+    const eventEndPos = event.endPos;
+    const eventWidth = eventEndPos - eventBeginPos;
+    
+    // triangle position
+    // 正方型斜邊長
+    const rectHypotenuseLength = 2*triangleHeight;
+    const rectLength = Math.sqrt(Math.pow(rectHypotenuseLength,2) / 2);
+    const rectX = eventBeginPos+eventWidth/2-triangleWidth/2;
+    const rectY = event.y-triangleHeight*2+3;
+    
+    // info box position
+    const infoX = (eventBeginPos+eventWidth/2-infoWidth/2-infoPadding) < 0 ? 0:(eventBeginPos+eventWidth/2-infoWidth/2-infoPadding);
+    const infoY = (event.y-triangleHeight-infoHeight);
+
+    return (
+      <div style={{zIndex: 999}}>
+        
+        {/* info box */}
+        <div 
+          style={{
+            width:infoWidth,
+            height:infoHeight,
+            position:'absolute',
+            background: '#bdbdbd',
+            // opacity: 0.9,
+            top:infoY,
+            left:infoX,
+            padding:infoPadding,
+            boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+            zIndex: 997
+          }}
+        >
+            <div style={{
+              fontSize: this.props.infoTitleSize,
+              paddingBottom: titleTimePadding,
+            }}>
+              {event.title}
+            </div>
+
+            <div style={{
+              fontSize: this.props.infoTimeSize,
+            }}>
+              {timeStr}
+            </div>
         </div>
+
+        {/* triangle */}
+        <div 
+          style={{
+            //borderColor: '#bdbdbd transparent transparent transparent',
+            //borderStyle: 'solid',
+            //borderWidth: `${triangleHeight}px ${triangleWidth/2}px`,
+            width:rectLength,
+            height:rectLength,
+            background: '#bdbdbd',
+            position:'absolute',
+            top:rectY,
+            left:rectX,
+            transform: 'rotate(-45deg)',
+            boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
+            zIndex: 998
+          }}
+        />
+        <div 
+          style={{
+            width:triangleWidth+4,
+            height:triangleHeight,
+            background: '#bdbdbd',
+            position:'absolute',
+            top:event.y-2*triangleHeight,
+            left:eventBeginPos+eventWidth/2-triangleWidth/2-4,
+            zIndex: 999
+          }}
+        />
       </div>
     );
-    /*
-    // info box
-    const infoTitleWidth = (eventTitle.length*infoTitleSize);
-    const infoTimeWidth = (eventStartTime.format("YYYY-MM-DD HH:mm:ss").length + 
-                          eventEndTime.format("YYYY-MM-DD HH:mm:ss").length + 3 )*infoTimeSize;
-    const infoWidth = infoTitleWidth > infoTimeWidth ? infoTitleWidth/2+10:infoTimeWidth/2+10;
-    const xInfo = centerPoint.x - infoWidth/2;
-    const yInfo = centerPoint.y - triangleHeight - infoHeight;
-
-    return (
-      <g>
-        <polygon 
-          points={`${leftPoint.x},${leftPoint.y} ${centerPoint.x},${centerPoint.y} ${rightPoint.x},${rightPoint.y}` }
-          style={{ fill:'#E8EAEB', opacity:0.9 }}
-        />
-        <rect
-          x={xInfo}
-          y={yInfo}
-          //rx={8}
-          //ry={8}
-          width={infoWidth}
-          height={infoHeight}
-          style={{ fill:'#E8EAEB', opacity:0.9 }}
-        />
-        <text 
-          x={xInfo+8}
-          y={yInfo+infoTitleSize} 
-          style={{ fill:'#333', fontSize:`${infoTitleSize}px` }}
-        >
-          {eventTitle}
-        </text>
-        <text 
-          x={xInfo+8}
-          y={yInfo+infoTitleSize+infoTimeSize+4} 
-          style={{ fill:'#333', fontSize:`${infoTimeSize}px` }}
-        >
-          {eventStartTime.format("YYYY-MM-DD HH:mm:ss")} - {eventEndTime.format("YYYY-MM-DD HH:mm:ss")}
-        </text>
-      </g>
-    )
-    */
   };
 }
