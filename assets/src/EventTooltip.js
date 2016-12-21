@@ -103,12 +103,12 @@ export default class EventTooltip extends Component {
         />
         <div 
           style={{
-            width:triangleWidth+4,
+            width:infoWidth,
             height:triangleHeight,
             background: '#bdbdbd',
             position:'absolute',
             top:event.y-2*triangleHeight,
-            left:eventBeginPos+eventWidth/2-triangleWidth/2-4,
+            left:infoX,
             zIndex: 999
           }}
         />
