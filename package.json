@@ -31,6 +31,8 @@
   "devDependencies": {
     "google-map-react": "^0.22.0",
     "material-ui": "^0.16.5",
-    "react-tap-event-plugin": "^2.0.1"
+    "react-redux": "^5.0.1",
+    "react-tap-event-plugin": "^2.0.1",
+    "redux": "^3.6.0"
   }
 }
