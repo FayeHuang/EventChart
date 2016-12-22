@@ -6,6 +6,10 @@ export default class Events extends Component {
   static propTypes = {
     data: PropTypes.array.isRequired,
     timeScale: PropTypes.func.isRequired,
+    yBeginPos: PropTypes.number.isRequired,
+    handleEventClick: PropTypes.func.isRequired,
+    onEventMouseOver: PropTypes.func.isRequired,
+    onEventMouseLeave: PropTypes.func.isRequired,
     //
     height: PropTypes.number,
     fontSize: PropTypes.number,
@@ -19,6 +23,25 @@ export default class Events extends Component {
 
   constructor(props) {
     super(props);
+  };
+
+  handleEventClick(e, event) {
+    console.log('click');
+    if (this.props.handleEventClick) {
+      this.props.handleEventClick(e, event);
+    }
+  };
+
+  onEventMouseOver(e, event) {
+    if (this.props.onEventMouseOver) {
+      this.props.onEventMouseOver(e, event);
+    }
+  };
+
+  onEventMouseLeave() {
+    if (this.props.onEventMouseLeave) {
+      this.props.onEventMouseLeave();
+    }
   };
 
   render() {
@@ -40,11 +63,10 @@ export default class Events extends Component {
         const stacked = preEventEndTime && (event.startTime-preEventEndTime <= 0) ? true : false;
         yPos = stacked ? yPos+this.props.height+10 : yPos;
         event.y = yPos;
+        event.absoluteY = yPos + this.props.yBeginPos;
 
         // 計算 event x 軸位置
         event.x = beginPos < 0 ? 0:beginPos;
-        // event.beginPos = beginPos;
-        // event.endPos = endPos;
 
         // 計算 event width
         event.width = endPos - event.x;
@@ -63,17 +85,17 @@ export default class Events extends Component {
               width={event.width}
               height={this.props.height}
               style={{ fill:event.color}}
-              //onClick={e => this.handleEventClick(e, event)}
-              //onMouseOver={e => this.onEventMouseOver(e, event)}
-              //onMouseLeave={() => this.onEventMouseLeave()}
+              onClick={e => this.handleEventClick(e, event)}
+              onMouseOver={e => this.onEventMouseOver(e, event)}
+              onMouseLeave={() => this.onEventMouseLeave()}
             />
             <text 
               x={textX}
               y={textY} 
               style={{ fill:'#414143', fontSize:`${this.props.fontSize}px` }}
-              //onClick={e => this.handleEventClick(e, event)}
-              //onMouseOver={e => this.onEventMouseOver(e, event)}
-              //onMouseLeave={() => this.onEventMouseLeave()}
+              onClick={e => this.handleEventClick(e, event)}
+              onMouseOver={e => this.onEventMouseOver(e, event)}
+              onMouseLeave={() => this.onEventMouseLeave()}
             >
               {event.title}
             </text>

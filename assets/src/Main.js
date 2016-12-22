@@ -1,17 +1,22 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { connect } from 'react-redux';
 
 import EventChart from './EventChart';
+import {windowResize} from './actions';
 
-export default class Main extends Component {
+class Main extends Component {
   
   static propTypes = {
+    // normal props
     appBarHeight: PropTypes.number,
     toolBarHeight: PropTypes.number,
-    //
     chartHeightMin: PropTypes.number,
     chartWidthMin: PropTypes.number,
+    // redux props
+    windowWidth: PropTypes.number,
+    windowHeight: PropTypes.number,
   };
 
   static defaultProps = {
@@ -23,24 +28,10 @@ export default class Main extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      chartWidth: window.innerWidth,
-      chartHeight: window.innerHeight-this.props.appBarHeight-this.props.toolBarHeight,
-    };
   };
 
   handleResize = () => {
-    const {chartWidthMin, chartHeightMin, appBarHeight, toolBarHeight} = this.props;
-    this.setState({ 
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      chartWidth: window.innerWidth > chartWidthMin ? 
-        window.innerWidth : chartWidthMin,
-      chartHeight: (window.innerHeight - appBarHeight - toolBarHeight) > chartHeightMin ?
-        (window.innerHeight-appBarHeight-toolBarHeight) : chartHeightMin,
-    });
+    this.props.dispatch( windowResize(window.innerWidth, window.innerHeight) ) ;
   };
 
   componentDidMount() {
@@ -51,8 +42,12 @@ export default class Main extends Component {
     window.removeEventListener('resize', this.handleResize);
   };
 
-
   render() {
+    const {windowWidth, windowHeight, chartHeightMin, chartWidthMin, appBarHeight, toolBarHeight} = this.props;
+    const chartWidth = windowWidth > chartWidthMin ? windowWidth:chartWidthMin;
+    const chartHeight = (windowHeight-appBarHeight-toolBarHeight) > chartHeightMin ?
+        (windowHeight-appBarHeight-toolBarHeight) : chartHeightMin;
+
     return(
       <MuiThemeProvider>
         <div>
@@ -104,11 +99,21 @@ export default class Main extends Component {
           </div>
 
           <EventChart 
-            width={this.state.chartWidth}
-            height={this.state.chartHeight-10}
+            width={chartWidth}
+            height={chartHeight-10}
           />
         </div>
       </MuiThemeProvider>
     )
   }
 }
+
+function mapStateToProps(state) {
+  const { page } = state
+  return {
+    windowWidth: page.windowWidth,
+    windowHeight: page.windowHeight,
+  }
+}
+
+export default connect(mapStateToProps)(Main)

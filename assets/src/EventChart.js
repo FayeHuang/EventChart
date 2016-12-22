@@ -2,88 +2,41 @@ import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 import Moment from 'moment';
 import { scaleTime } from 'd3-scale';
+import { connect } from 'react-redux';
 
 import EventTooltip from './EventTooltip';
 import TimeAxis from './TimeAxis';
 import EventDetailDialog from './EventDetailDialog';
 import Events from './Events';
 
-const yellow = "#e7d77f";
-const blue = "#7ec9e9";
-const green = "#72e78f";
-const red  = "#f59098";
-const gray = 'grey';
+import {unplannedEventsData, plannedEventsData} from './data';
 
-// Test data
-const outageEvents = [
-  {
-    id: 1,
-    startTime: Moment('2016-12-12 13:00:00'),
-    endTime: Moment('2016-12-13 13:00:00'),
-    title: "event 123",
-    color: yellow,
-  }, {
-    id: 2,
-    startTime: Moment('2016-12-13 13:00:00'),
-    endTime: Moment('2016-12-14 13:00:00'),
-    title: "event 456",
-    color: blue,
-  }, {
-    id: 3,
-    startTime: Moment('2016-12-14 09:00:00'),
-    endTime: Moment('2016-12-15 14:00:00'),
-    title: "event ttt",
-    color: green,
-  }, {
-    id: 4,
-    startTime: Moment('2016-12-15 08:00:00'),
-    endTime: Moment('2016-12-15 20:00:00'),
-    title: "event yyy",
-    color: red,
-  }, {
-    id: 5,
-    startTime: Moment('2016-12-15 09:00:00'),
-    endTime: Moment('2016-12-16 14:00:00'),
-    title: "event xxx",
-    color: yellow,
-  }, {
-    id: 6,
-    startTime: Moment('2016-12-15 14:00:00'),
-    endTime: Moment('2016-12-15 21:00:00'),
-    title: "event rrr",
-    color: green,
-  }
-];
+import {
+  timelineStartDrag, 
+  timelineStopDrag, 
+  timelineDragging, 
+  timelineZooming,
+  eventHover,
+  eventHoverOut,
+  eventDialogOpen,
+  eventDialogClose
+} from './actions';
 
-const stateEvents = [
-  {
-    id: 11,
-    startTime: Moment('2016-12-12 13:00:00'),
-    endTime: Moment('2016-12-13 13:00:00'),
-    title: "event 1",
-    color: gray,
-  }, {
-    id: 12,
-    startTime: Moment('2016-12-13 14:00:00'),
-    endTime: Moment('2016-12-14 14:00:00'),
-    title: "event 2",
-    color: gray,
-  }, {
-    id: 13,
-    startTime: Moment('2016-12-14 15:00:00'),
-    endTime: Moment('2016-12-15 15:00:00'),
-    title: "event 3",
-    color: gray,
-  }
-];
-
-export default class EventChart extends Component {
+class EventChart extends Component {
   
   static propTypes = {
+    // normal props
     eventHeight: PropTypes.number,
     fontSize: PropTypes.number,
     width: PropTypes.number,
     height: PropTypes.number,
+    // redux props
+    mouseXPos: PropTypes.number,
+    chartStartTime: PropTypes.object,
+    chartEndTime: PropTypes.object,
+    hoverEvent: PropTypes.object,
+    clickEvent: PropTypes.object,
+    eventDialogOpen: PropTypes.func,
   };
 
   static defaultProps = {
@@ -95,129 +48,83 @@ export default class EventChart extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      hoverEvent: null,
-      clickEvent: null,
-      chartStartTime: Moment('2016-12-12 09:00:00'),
-      chartEndTime: Moment('2016-12-16 09:00:00'),
-      isDragging: false,
-      mouseXPos: 0,
-      eventDialogOpen: false,
-    };
   };
 
   // event action 
   handleEventClick(e, event) {
     e.stopPropagation();
-    this.setState({ clickEvent: event, eventDialogOpen: true });
+    console.log(event);
+    this.props.dispatch( eventDialogOpen(event) );
+    // this.setState({ clickEvent: event, eventDialogOpen: true });
   };
   onEventMouseOver(e, event) {
-    this.setState({ hoverEvent: event });
+    this.props.dispatch( eventHover(event) );
+    // this.setState({ hoverEvent: event });
   };
   onEventMouseLeave() {
-    this.setState({ hoverEvent: null });
+    this.props.dispatch( eventHoverOut() );
+    // this.setState({ hoverEvent: null });
+  };
+  handleEventDialogClose() {
+    this.props.dispatch( eventDialogClose() );
+    // this.setState({ clickEvent: null, eventDialogOpen: false });
   };
 
-  // svg action 
+  // timeline dragging, change time range
   onMouseDown(e) {
     e.preventDefault();
-    const x = e.pageX;
-    const y = e.pageY;
-    this.setState({ mouseXPos: x, isDragging: true });
+    this.props.dispatch( timelineStartDrag(e.pageX) );
   };
   onMouseMove(e) {
     e.preventDefault();
-    const x = e.pageX;
-    const y = e.pageY;
-    if (this.state.isDragging && (this.state.mouseXPos !== x) ) {
-      if (this.state.mouseXPos < x) {
-        this.setState({ 
-          chartStartTime: this.state.chartStartTime.subtract(30, 'minutes'),
-          chartEndTime: this.state.chartEndTime.subtract(30, 'minutes'),
-          mouseXPos: x,
-        });
+    if (this.props.mouseXPos >= 0 && (this.props.mouseXPos !== e.pageX) ) {
+      if (this.props.mouseXPos < e.pageX) {
+        this.props.dispatch( 
+          timelineDragging(
+            e.pageX, 
+            this.props.chartStartTime.subtract(30, 'minutes'), 
+            this.props.chartEndTime.subtract(30, 'minutes')
+        ));
       } else {
-        this.setState({ 
-          chartStartTime: this.state.chartStartTime.add(30, 'minutes'),
-          chartEndTime: this.state.chartEndTime.add(30, 'minutes'),
-          mouseXPos: x,
-        });
+        this.props.dispatch( 
+          timelineDragging(
+            e.pageX, 
+            this.props.chartStartTime.add(30, 'minutes'), 
+            this.props.chartEndTime.add(30, 'minutes')
+        ));
       }
     }
   };
   onMouseOut(e) {
     e.preventDefault();
-    this.setState({ mouseXPos: 0, isDragging: false });
+    this.props.dispatch( timelineStopDrag() );
   };
-
   onMouseUp(e) {
     e.stopPropagation();
-    const x = e.pageX;
-    const y = e.pageY;
-    this.setState({ mouseXPos: 0, isDragging: false });
+    this.props.dispatch( timelineStopDrag() );
   };
 
+  // timeline zooming, change time range
   handleScrollWheel(e) {
     e.preventDefault();
-
     if (e.deltaY < 0) {
-      this.setState({ 
-        chartStartTime: this.state.chartStartTime.add(1, 'hours'),
-        chartEndTime: this.state.chartEndTime.subtract(1, 'hours'),
-      });
+      console.log('zoom in');
+      this.props.dispatch( 
+        timelineZooming(
+          this.props.chartStartTime.add(1, 'hours'), 
+          this.props.chartEndTime.subtract(1, 'hours')
+      ));
     } else {
-      this.setState({ 
-        chartStartTime: this.state.chartStartTime.subtract(1, 'hours'),
-        chartEndTime: this.state.chartEndTime.add(1, 'hours'),
-      });
+      console.log('zoom out');
+      this.props.dispatch( 
+        timelineZooming(
+          this.props.chartStartTime.subtract(1, 'hours'), 
+          this.props.chartEndTime.add(1, 'hours')
+      ));
     }
-  };
-
-  handleEventDialogClose() {
-    this.setState({ clickEvent: null, eventDialogOpen: false });
   };
 
   render() {
-    
-    // event markers
-    const timeScale = scaleTime().domain([this.state.chartStartTime, this.state.chartEndTime]).range([0, this.props.width]);
-    const unplannedEvents = (
-      <Events 
-        data={outageEvents}
-        timeScale={timeScale}
-      /> );
-    const plannedEvents = (
-      <Events 
-        data={stateEvents}
-        timeScale={timeScale}
-      /> );
-    
-    // tooltip 
-    const tooltipInfoTitleSize = 18;
-    const tooltipInfoTimeSize = 14;
-    let tooltip = null;
-    if ( this.state.hoverEvent ) {
-      tooltip = (
-        <EventTooltip 
-          event={this.state.hoverEvent}
-          infoTitleSize={tooltipInfoTitleSize}
-          infoTimeSize={tooltipInfoTimeSize}
-        />
-      )
-    }
-
-    let dialog = null;
-    if (this.state.eventDialogOpen && this.state.clickEvent) {
-      dialog = (
-        <EventDetailDialog 
-          event={this.state.clickEvent}
-          dialogOpen={this.state.eventDialogOpen}
-          handleEventDialogClose={() => this.handleEventDialogClose() }
-        />
-      )
-    }
-
-
     // 時間軸的高度
     const timeLineHeight = 35;
     // 非計畫性事件與頁面滿版的高度
@@ -230,6 +137,55 @@ export default class EventChart extends Component {
     // 減 10 (because stroke width ?) 避免 svg event chart overflow
     // const eventChartHeight = allEventHeight > eventChartDivHeight-10 ? allEventHeight:eventChartDivHeight-10;
     const eventChartHeight = eventChartDivHeight-10;
+
+    
+    const timeScale = scaleTime().domain([this.props.chartStartTime, this.props.chartEndTime]).range([0, this.props.width]);
+    const unplannedEvents = (
+      <Events 
+        data={unplannedEventsData}
+        timeScale={timeScale}
+        yBeginPos={0}
+        handleEventClick={(e, event) => this.handleEventClick(e, event)}
+        onEventMouseOver={(e, event) => this.onEventMouseOver(e, event)}
+        onEventMouseLeave={() => this.onEventMouseLeave()}
+      /> );
+    const plannedEvents = (
+      <Events 
+        data={plannedEventsData}
+        timeScale={timeScale}
+        yBeginPos={0+eventChartDivHeight+timeLineHeight}
+        handleEventClick={(e, event) => this.handleEventClick(e, event)}
+        onEventMouseOver={(e, event) => this.onEventMouseOver(e, event)}
+        onEventMouseLeave={() => this.onEventMouseLeave()}
+      /> );
+    
+    // tooltip 
+    const tooltipInfoTitleSize = 18;
+    const tooltipInfoTimeSize = 14;
+    let tooltip = null;
+    if ( this.props.hoverEvent ) {
+      tooltip = (
+        <EventTooltip 
+          event={this.props.hoverEvent}
+          infoTitleSize={tooltipInfoTitleSize}
+          infoTimeSize={tooltipInfoTimeSize}
+        />
+      )
+    }
+
+    let dialog = null;
+    if (this.props.eventDialogOpen && this.props.clickEvent) {
+      dialog = (
+        <EventDetailDialog 
+          event={this.props.clickEvent}
+          dialogOpen={this.props.eventDialogOpen}
+          handleEventDialogClose={() => this.handleEventDialogClose() }
+        />
+      )
+    }
+
+
+    
 
     
 
@@ -323,7 +279,29 @@ export default class EventChart extends Component {
           />
         </svg>
         {dialog}
+        {/*
+        <pre>
+        redux state = { JSON.stringify(this.props.eventChart, null, 2) }
+        </pre>
+        */}
+        
       </div>
+
     )
   }
 }
+
+function mapStateToProps(state) {
+  const { eventChart } = state
+  return {
+    mouseXPos: eventChart.mouseXPos,
+    chartStartTime: eventChart.chartStartTime,
+    chartEndTime: eventChart.chartEndTime,
+    hoverEvent: eventChart.hoverEvent,
+    clickEvent: eventChart.clickEvent,
+    eventDialogOpen: eventChart.eventDialogOpen,
+    eventChart: eventChart,
+  }
+}
+
+export default connect(mapStateToProps)(EventChart)

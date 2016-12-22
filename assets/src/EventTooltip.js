@@ -22,6 +22,7 @@ export default class EventTooltip extends Component {
 
   render() {
     const {event, infoTitleSize, infoTimeSize} = this.props;
+    console.log(event);
     
     // 計算 infobox width & height
     const infoPadding = 10;
@@ -36,21 +37,17 @@ export default class EventTooltip extends Component {
     const triangleHeight = 15;
     const triangleWidth = 2*triangleHeight;
 
-    // 計算 triangle & info box position
-    const eventBeginPos = event.beginPos < 0 ? 0:event.beginPos;
-    const eventEndPos = event.endPos;
-    const eventWidth = eventEndPos - eventBeginPos;
     
     // triangle position
     // 正方型斜邊長
     const rectHypotenuseLength = 2*triangleHeight;
     const rectLength = Math.sqrt(Math.pow(rectHypotenuseLength,2) / 2);
-    const rectX = eventBeginPos+eventWidth/2-triangleWidth/2;
-    const rectY = event.y-triangleHeight*2+3;
+    const rectX = event.x+event.width/2-triangleWidth/2;
+    const rectY = event.absoluteY-triangleHeight*2+3;
     
     // info box position
-    const infoX = (eventBeginPos+eventWidth/2-infoWidth/2-infoPadding) < 0 ? 0:(eventBeginPos+eventWidth/2-infoWidth/2-infoPadding);
-    const infoY = (event.y-triangleHeight-infoHeight);
+    const infoX = (event.x+event.width/2-infoWidth/2-infoPadding) < 0 ? 0:(event.x+event.width/2-infoWidth/2-infoPadding);
+    const infoY = (event.absoluteY-triangleHeight-infoHeight);
 
     return (
       <div style={{zIndex: 999}}>
@@ -107,7 +104,7 @@ export default class EventTooltip extends Component {
             height:triangleHeight,
             background: '#bdbdbd',
             position:'absolute',
-            top:event.y-2*triangleHeight,
+            top:event.absoluteY-2*triangleHeight,
             left:infoX,
             zIndex: 999
           }}
