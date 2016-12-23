@@ -2,6 +2,11 @@ import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { connect } from 'react-redux';
+import AppBar from 'material-ui/AppBar';
+import Drawer from 'material-ui/Drawer';
+import MenuItem from 'material-ui/MenuItem';
+import IconButton from 'material-ui/IconButton';
+import ActionHome from 'material-ui/svg-icons/action/home';
 
 import EventChart from './EventChart';
 import {windowResize, windowScroll} from './actions';
@@ -20,7 +25,7 @@ class Main extends Component {
   };
 
   static defaultProps = {
-    appBarHeight: 100,
+    appBarHeight: 64,
     toolBarHeight: 100,
     chartHeightMin: 300,
     chartWidthMin: 768,
@@ -28,6 +33,9 @@ class Main extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      navOpen: false,
+    }
   };
 
   handleResize = () => {
@@ -36,6 +44,10 @@ class Main extends Component {
 
   handleScroll = () => {
     this.props.dispatch( windowScroll(window.pageXOffset, window.pageYOffset) );
+  };
+
+  handleNavOpen() {
+    this.setState({navOpen: !this.state.navOpen});
   };
 
   componentDidMount() {
@@ -58,17 +70,11 @@ class Main extends Component {
     return(
       <MuiThemeProvider>
         <div>
-          <div style={{
-            fontSize:36,
-            height: this.props.appBarHeight,
-            lineHeight: '100px',
-            color:'#ccc',
-            verticalAlign: 'middle',
-            paddingLeft: 30,
-            backgroundColor: '#333',
-          }}>
-            App Bar 
-          </div>
+          <AppBar
+            title="AppBar"
+            onLeftIconButtonTouchTap={() => this.handleNavOpen()}
+            style={{backgroundColor:'#616161', color:'#ccc'}}
+          />
 
           <div style={{
             fontSize:36,
@@ -77,7 +83,7 @@ class Main extends Component {
             color:'#ccc',
             verticalAlign: 'middle',
             paddingLeft: 30,
-            backgroundColor: '#333',
+            backgroundColor: '#616161',
           }}>
             <div style={{display:'inline-block',paddingRight:20}}>
               <div style={{height:20, width:30, backgroundColor:'#e7d77f', display:'inline-block'}}></div>
@@ -110,6 +116,16 @@ class Main extends Component {
             height={chartHeight-10}
             chartYBeginPos={this.props.appBarHeight+this.props.toolBarHeight}
           />
+
+          <Drawer open={this.state.navOpen} width={200}>
+            <AppBar 
+              title="AppBar" 
+              onLeftIconButtonTouchTap={() => this.handleNavOpen()} 
+              style={{backgroundColor:'#616161', color:'#ccc'}}
+            />
+            <MenuItem>Menu Item</MenuItem>
+            <MenuItem>Menu Item 2</MenuItem>
+          </Drawer>
         </div>
       </MuiThemeProvider>
     )
