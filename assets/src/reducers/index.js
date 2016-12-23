@@ -4,17 +4,27 @@ import Moment from 'moment';
 /*
 page releated
 */
-import {WINDOW_RESIZE} from '../actions';
+import {
+  WINDOW_RESIZE,
+  WINDOW_SCROLL,
+} from '../actions';
 
 function page(state = { 
   windowWidth: window.innerWidth, 
   windowHeight: window.innerHeight,
+  windowXOffset: window.pageXOffset,
+  windowYOffset: window.pageYOffset,
 }, action) {
   switch (action.type) {
     case WINDOW_RESIZE:
       return Object.assign({}, state, {
         windowWidth: action.windowWidth,
         windowHeight: action.windowHeight,
+      })
+    case WINDOW_SCROLL:
+      return Object.assign({}, state, {
+        windowXOffset: action.windowXOffset,
+        windowYOffset: action.windowYOffset,
       })
     default:
       return state

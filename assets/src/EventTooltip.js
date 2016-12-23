@@ -6,6 +6,10 @@ export default class EventTooltip extends Component {
   
   static propTypes = {
     event: PropTypes.object.isRequired,
+    chartWidth: PropTypes.number.isRequired,
+    chartHeight: PropTypes.number.isRequired,
+    chartYBeginPos: PropTypes.number.isRequired,
+    windowYOffset: PropTypes.number.isRequired,
     //
     infoTitleSize: PropTypes.number,
     infoTimeSize: PropTypes.number,
@@ -22,8 +26,10 @@ export default class EventTooltip extends Component {
 
   render() {
     const {event, infoTitleSize, infoTimeSize} = this.props;
-    console.log(event);
-    
+
+    const eventAbsoluteY = (event.pageTop-this.props.chartYBeginPos+this.props.windowYOffset) > 0 ?
+      (event.pageTop-this.props.chartYBeginPos+this.props.windowYOffset):0;
+
     // 計算 infobox width & height
     const infoPadding = 10;
     const titleTimePadding = 5;
@@ -34,7 +40,7 @@ export default class EventTooltip extends Component {
     const infoHeight = infoPadding*2 + titleTimePadding + infoTitleSize + infoTimeSize + 15;
 
     // triangle width & height
-    const triangleHeight = 15;
+    const triangleHeight = 10;
     const triangleWidth = 2*triangleHeight;
 
     
@@ -42,15 +48,23 @@ export default class EventTooltip extends Component {
     // 正方型斜邊長
     const rectHypotenuseLength = 2*triangleHeight;
     const rectLength = Math.sqrt(Math.pow(rectHypotenuseLength,2) / 2);
-    const rectX = event.x+event.width/2-triangleWidth/2;
-    const rectY = event.absoluteY-triangleHeight*2+3;
+    const rectX = event.x+event.width/2-triangleWidth/2+5;
+    const rectY = eventAbsoluteY-triangleHeight*2+3;
     
     // info box position
-    const infoX = (event.x+event.width/2-infoWidth/2-infoPadding) < 0 ? 0:(event.x+event.width/2-infoWidth/2-infoPadding);
-    const infoY = (event.absoluteY-triangleHeight-infoHeight);
+    const infoXBegin = (event.x+event.width/2-infoWidth/2-infoPadding) < 0 ? 0:(event.x+event.width/2-infoWidth/2-infoPadding);
+    const infoXEnd = infoXBegin+infoWidth+2*infoPadding;
+    const infoX = infoXEnd > this.props.chartWidth ? (this.props.chartWidth+10)-2*infoPadding-infoWidth:infoXBegin;
+    const infoY = (eventAbsoluteY-triangleHeight-infoHeight);
 
     return (
-      <div style={{zIndex: 999}}>
+      <div style={{
+        width:this.props.chartWidth,
+        height:this.props.chartHeight,
+        position:'absolute',
+        top:0,
+        left:0
+      }}>
         
         {/* info box */}
         <div 
@@ -104,7 +118,7 @@ export default class EventTooltip extends Component {
             height:triangleHeight,
             background: '#bdbdbd',
             position:'absolute',
-            top:event.absoluteY-2*triangleHeight,
+            top:eventAbsoluteY-2*triangleHeight,
             left:infoX,
             zIndex: 999
           }}

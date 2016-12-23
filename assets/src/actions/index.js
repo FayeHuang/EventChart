@@ -4,11 +4,19 @@
 page releated
 */
 export const WINDOW_RESIZE = 'WINDOW_RESIZE';
+export const WINDOW_SCROLL = 'WINDOW_SCROLL';
 export function windowResize(windowWidth, windowHeight) {
   return {
     type: WINDOW_RESIZE,
     windowWidth,
     windowHeight,
+  }
+}
+export function windowScroll(windowXOffset, windowYOffset) {
+  return {
+    type: WINDOW_SCROLL,
+    windowXOffset,
+    windowYOffset,
   }
 }
 

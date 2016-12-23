@@ -4,7 +4,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { connect } from 'react-redux';
 
 import EventChart from './EventChart';
-import {windowResize} from './actions';
+import {windowResize, windowScroll} from './actions';
 
 class Main extends Component {
   
@@ -34,12 +34,18 @@ class Main extends Component {
     this.props.dispatch( windowResize(window.innerWidth, window.innerHeight) ) ;
   };
 
+  handleScroll = () => {
+    this.props.dispatch( windowScroll(window.pageXOffset, window.pageYOffset) );
+  };
+
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
+    window.addEventListener("scroll", this.handleScroll);
   };
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+    window.addEventListener("scroll", this.handleScroll);
   };
 
   render() {
@@ -47,6 +53,7 @@ class Main extends Component {
     const chartWidth = windowWidth > chartWidthMin ? windowWidth:chartWidthMin;
     const chartHeight = (windowHeight-appBarHeight-toolBarHeight) > chartHeightMin ?
         (windowHeight-appBarHeight-toolBarHeight) : chartHeightMin;
+
 
     return(
       <MuiThemeProvider>
@@ -101,6 +108,7 @@ class Main extends Component {
           <EventChart 
             width={chartWidth}
             height={chartHeight-10}
+            chartYBeginPos={this.props.appBarHeight+this.props.toolBarHeight}
           />
         </div>
       </MuiThemeProvider>
