@@ -1,6 +1,8 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 
+import {getTextWidth} from './util';
+
 export default class Events extends Component {
   
   static propTypes = {
@@ -99,7 +101,11 @@ export default class Events extends Component {
               onMouseOver={e => this.onEventMouseOver(e, event)}
               onMouseLeave={() => this.onEventMouseLeave()}
             >
-              {event.title}
+              {
+                // text overflow
+                getTextWidth(event.title, `${this.props.fontSize}px Arial`) > event.width-2*xTextOffset ?
+                  (event.title.slice(0, event.width/this.props.fontSize) + '...') : event.title
+              }
             </text>
             
           </g>
